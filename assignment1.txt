@@ -16,6 +16,28 @@ Output:
 +----------------+---------------+------+-----+---------+-------+
 
 ################################ Task-2 #########################################
+Clustered index:
+Clustered index is a table where the data for the rows are stored. It defines the order of the table data based on the key values that can be sorted in only one direction. In the database, each table can contains only one clustered index. In a relational database, if the table column contains a primary key or unique key, MySQL allows you to create a clustered index named PRIMARY based on that specific column.
+
+
+Secondary index:
+A Secondary index is an index that is not a primary index and may have duplicates.
+
+B-Tree:
+B-tree is a self-balancing tree data structure that maintains sorted data and allows searches, sequential access, insertions, and deletions in logarithmic time. The B-tree generalizes the binary search tree, allowing for nodes with more than two children.
+-> Nodes are sorted in inorder traversal.
+-> Search keys and data are stored in internal or leaf nodes.
+-> All leaf nodes are at the same level.
+
+Hash index:
+A hash index consists of a collection of buckets organized in an array. A hash function maps index keys to corresponding buckets in the hash index.
+Hashing is of 2 types:
+1. Static Hashing:- In static hashing, when a search-key value is provided, the hash function always computes the same address.
+It can be further divided in 2 parts based on collision handling:
+1.1 Open hashing:- When a hash function generates an address at which data is already stored, the next free bucket is allocated to it. This mechanism is called Open Hashing.
+1.2 Closed hashing:- When buckets are full, a new bucket is allocated for the same hash result and is linked after the previous one. This mechanism is called Closed Hashing.
+
+2. Dynamic Hashing:- The problem with static hashing is that it does not expand or shrink dynamically as the size of the database grows or shrinks. Dynamic hashing provides a mechanism in which data buckets are added and removed dynamically and on-demand. Dynamic hashing is also known as extended hashing.
 
 ################################ Task-3 #########################################
 
