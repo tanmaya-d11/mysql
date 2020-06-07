@@ -1,0 +1,80 @@
+################################ Task-1 #########################################
+
+alter table payments add orderNumber int;
+alter table payments add foreign key(orderNumber) references orders(orderNumber);
+describe payments;
+
+Output:
++----------------+---------------+------+-----+---------+-------+
+| Field          | Type          | Null | Key | Default | Extra |
++----------------+---------------+------+-----+---------+-------+
+| customerNumber | int           | NO   | PRI | NULL    |       |
+| checkNumber    | varchar(50)   | NO   | PRI | NULL    |       |
+| paymentDate    | date          | NO   |     | NULL    |       |
+| amount         | decimal(10,2) | NO   |     | NULL    |       |
+| orderNumber    | int           | YES  | MUL | NULL    |       |
++----------------+---------------+------+-----+---------+-------+
+
+################################ Task-2 #########################################
+
+################################ Task-3 #########################################
+
+select @customerNumber:=MAX(customerNumber)+1 from customers;
+insert into customers values (@customerNumber, 'Dummy', 'first', 'Dummy', '1', 'line1', 'line2', 'Mumbai', 'Maharshtra', '400076', 'India', NULL, 10000.00);
+select @orderNumber:=MAX(orderNUmber)+1 from orders;
+insert into orders values (@orderNumber, '2020-05-12', '2020-05-22', '2020-05-23', 'Shipped', NULL, 497);
+insert into orderdetails values (@orderNumber, 'S10_1678', 10, 200.00, 1);
+insert into payments values (@customerNumber, 'HQ222113', '2020-05-24', 2000.00, @orderNumber);
+commit;
+
+################################ Task-4 #########################################
+
+select customerName, orderNumber, shippedDate, paymentDate, amount, quantityordered, productName, image from (select customers.customerName, orders.orderNumber, orders.shippedDate, payments.paymentDate, payments.amount, orderdetails.productCode, orderdetails.quantityOrdered from customers,orders,payments,orderdetails where customers.customerNumber=497 and orders.orderNumber=10426 and payments.orderNumber=10426 and orderdetails.orderNumber=10426) as subtable,products,productlines where subtable.productCode=products.productCode AND products.productLine=productlines.productLine;
+
+output:
++--------------+-------------+-------------+-------------+---------+-----------------+---------------------------------------+--------------+
+| customerName | orderNumber | shippedDate | paymentDate | amount  | quantityOrdered | productName                           | image        |
++--------------+-------------+-------------+-------------+---------+-----------------+---------------------------------------+--------------+
+| Dummy        |       10426 | 2020-05-23  | 2020-05-24  | 2000.00 |              10 | 1969 Harley Davidson Ultimate Chopper | 0x           |
++--------------+-------------+-------------+-------------+---------+-----------------+---------------------------------------+--------------+
+1 row in set (0.00 sec)
+
+using explain-
++----+-------------+--------------+------------+--------+---------------------+-------------+---------+----------------------------------------+------+----------+-------+
+| id | select_type | table        | partitions | type   | possible_keys       | key         | key_len | ref                                    | rows | filtered | Extra |
++----+-------------+--------------+------------+--------+---------------------+-------------+---------+----------------------------------------+------+----------+-------+
+|  1 | SIMPLE      | customers    | NULL       | const  | PRIMARY             | PRIMARY     | 4       | const                                  |    1 |   100.00 | NULL  |
+|  1 | SIMPLE      | orders       | NULL       | const  | PRIMARY             | PRIMARY     | 4       | const                                  |    1 |   100.00 | NULL  |
+|  1 | SIMPLE      | payments     | NULL       | ref    | orderNumber         | orderNumber | 5       | const                                  |    1 |   100.00 | NULL  |
+|  1 | SIMPLE      | orderdetails | NULL       | ref    | PRIMARY,productCode | PRIMARY     | 4       | const                                  |    1 |   100.00 | NULL  |
+|  1 | SIMPLE      | products     | NULL       | eq_ref | PRIMARY,productLine | PRIMARY     | 17      | classicmodels.orderdetails.productCode |    1 |   100.00 | NULL  |
+|  1 | SIMPLE      | productlines | NULL       | eq_ref | PRIMARY             | PRIMARY     | 52      | classicmodels.products.productLine     |    1 |   100.00 | NULL  |
++----+-------------+--------------+------------+--------+---------------------+-------------+---------+----------------------------------------+------+----------+-------+
+6 rows in set, 1 warning (0.00 sec)
+
+################################ Task-5 #########################################
+
+create table countorders select customerNumber, count(*) as orderCount from orders group by customerNumber;
+alter table countorders add primary key (customerNumber);
+alter table countorders add foreign key (customerNumber) references customers(customerNumber);
+create trigger update_ordercount after insert on orders for each row update countorders set orderCount=orderCount+1 where customerNumber=new.customerNumber;
+
+On querying select * from countorders where customerNumber=497;
+Output:
++----------------+------------+
+| customerNumber | orderCount |
++----------------+------------+
+|            497 |          1 |
++----------------+------------+
+
+After inserting an order by querying:
+insert into orders values (10427, '2020-05-12', '2020-05-23', '2020-05-26', 'Shipped', NULL, 497);
+insert into orderdetails values (10427, 'S10_1678', 10, 200.00, 2);
+insert into payments values (497, 'HQ222173', '2020-05-27', 2000.00, 10427);
+select * from countorders where customerNumber=497;
+Output:
++----------------+------------+
+| customerNumber | orderCount |
++----------------+------------+
+|            497 |          2 |
++----------------+------------+
